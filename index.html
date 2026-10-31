@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REELE Countdown</title>
+<style>
+  :root { --deep:#6a3fa0; --text:#3d1f5c; --pink:#f8bbd9; --lilac:#d1c4e9; --soft:#f8f0fc; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: transparent; font-family: Georgia, "Times New Roman", serif; }
+  body { display: flex; align-items: center; justify-content: center; padding: 8px; }
+  .card { width: 100%; max-width: 560px; padding: 16px 20px 14px; text-align: center; color: var(--text);
+    background: linear-gradient(135deg, var(--lilac), var(--pink)); border-radius: 16px; }
+  .label { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+  .days { font-size: 64px; line-height: 1; font-weight: bold; color: var(--deep); margin: 6px 0 2px; }
+  .unit { font-size: 15px; margin-bottom: 8px; }
+  .parts { display: flex; justify-content: center; gap: 18px; font-size: 14px; }
+  .parts b { display: block; font-size: 20px; color: var(--deep); }
+  .date { margin-top: 8px; font-size: 12px; opacity: .75; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="label" id="title">Days to the board exam</div>
+  <div class="days" id="days">--</div>
+  <div class="unit" id="unit">days</div>
+  <div class="parts">
+    <div><b id="hh">--</b>hours</div>
+    <div><b id="mm">--</b>min</div>
+    <div><b id="ss">--</b>sec</div>
+    <div><b id="ww">--</b>weeks</div>
+  </div>
+  <div class="date" id="date"></div>
+</div>
+<script>
+  // Change the exam date here (year-month-day), or use a link like ...?date=2027-04-17
+  // (Manila time, UTC+8). The date below is the placeholder from your tracker.
+  var DEFAULT_DATE = "2027-04-17";
+  var params = new URLSearchParams(location.search);
+  var dateStr = /^\d{4}-\d{2}-\d{2}$/.test(params.get("date") || "") ? params.get("date") : DEFAULT_DATE;
+  if (params.get("title")) document.getElementById("title").textContent = params.get("title");
+  var target = new Date(dateStr + "T00:00:00+08:00").getTime();
+  var pad = function (n) { return String(n).padStart(2, "0"); };
+  function tick() {
+    var ms = target - Date.now();
+    if (ms <= 0) {
+      document.getElementById("days").textContent = "0";
+      document.getElementById("unit").textContent = "Exam day. You've got this!";
+      ["hh","mm","ss","ww"].forEach(function (id) { document.getElementById(id).textContent = "0"; });
+    } else {
+      var s = Math.floor(ms / 1000), d = Math.floor(s / 86400);
+      document.getElementById("days").textContent = d;
+      document.getElementById("unit").textContent = d === 1 ? "day" : "days";
+      document.getElementById("hh").textContent = pad(Math.floor(s % 86400 / 3600));
+      document.getElementById("mm").textContent = pad(Math.floor(s % 3600 / 60));
+      document.getElementById("ss").textContent = pad(s % 60);
+      document.getElementById("ww").textContent = Math.floor(d / 7);
+    }
+    document.getElementById("date").textContent = new Date(dateStr + "T12:00:00+08:00")
+      .toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
+  }
+  tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>
