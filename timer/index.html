@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet"><title>Study Timer</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; font-family: "Noto Serif", Georgia, "Times New Roman", serif; color: #f3e8ff; }
+  body {
+    display: flex; align-items: center; justify-content: center; padding: 14px;
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(255,190,225,.45), transparent 55%),
+      radial-gradient(ellipse at 85% 30%, rgba(160,140,255,.5), transparent 55%),
+      radial-gradient(ellipse at 50% 100%, rgba(255,160,200,.4), transparent 60%),
+      linear-gradient(160deg, #2a2352, #4a2f6e 55%, #6d3a73);
+  }
+  .box { width: 100%; max-width: 640px; text-align: center; }
+  h1 { font-size: 20px; letter-spacing: .02em; margin-bottom: 10px; }
+  .seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.18); margin-bottom: 14px; }
+  .seg button { font: inherit; font-size: 13px; font-weight: bold; padding: 6px 20px; border: 0; border-radius: 9px;
+    background: transparent; color: #e9d9ff; cursor: pointer; }
+  .seg button.on { background: rgba(60,30,80,.85); color: #fff; }
+  .clock { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .d { width: 22%; max-width: 128px; aspect-ratio: 3/4; border-radius: 16px; position: relative; overflow: hidden;
+    background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.08));
+    border: 1px solid rgba(255,255,255,.28); display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: clamp(48px, 13vw, 96px); color: #f3e3f4; }
+  .d::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0,0,0,.25); }
+  .d.flip { animation: flip .35s ease; }
+  @keyframes flip { 0% { transform: rotateX(0); } 50% { transform: rotateX(-14deg) scale(.97); } 100% { transform: rotateX(0); } }
+  .colon { display: flex; flex-direction: column; gap: 14px; }
+  .colon i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.7); }
+  .lbl { display: flex; justify-content: space-between; padding: 0 6%; margin-top: 8px; font-size: 10px;
+    letter-spacing: .2em; opacity: .75; font-weight: 600; }
+  .status { margin-top: 12px; font-size: 13px; opacity: .9; }
+  .bar { height: 6px; border-radius: 6px; background: rgba(255,255,255,.15); margin: 10px auto 0; max-width: 420px; overflow: hidden; }
+  .bar div { height: 100%; width: 0; background: linear-gradient(90deg, #f8a8d6, #b9a2ff); transition: width .5s linear; }
+  .ctl { margin-top: 14px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .ctl button { font: inherit; font-size: 13px; font-weight: bold; padding: 10px 22px; border-radius: 10px; cursor: pointer;
+    color: #fff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); }
+  .ctl button.main { background: rgba(120,60,120,.7); }
+  .ctl button:hover { background: rgba(255,255,255,.24); }
+  .len { margin-top: 12px; font-size: 12px; opacity: .85; display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  .len button { font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 8px; cursor: pointer; color: #fff;
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); }
+  .len button.on { background: rgba(255,255,255,.3); }
+  .len input { width: 54px; font: inherit; font-size: 12px; padding: 4px 6px; border-radius: 8px; color: #fff;
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); text-align: center; }
+  .note { margin-top: 10px; font-size: 11px; opacity: .6; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h1 id="head">Time to study</h1>
+  <div class="seg"><button id="bStudy" class="on">Study</button><button id="bBreak">Break</button></div>
+  <div class="clock">
+    <div class="d" id="m1">0</div><div class="d" id="m2">0</div>
+    <div class="colon"><i></i><i></i></div>
+    <div class="d" id="s1">0</div><div class="d" id="s2">0</div>
+  </div>
+  <div class="lbl"><span>MINUTES</span><span>SECONDS</span></div>
+  <div class="status" id="status">Ready</div>
+  <div class="bar"><div id="prog"></div></div>
+  <div class="ctl"><button class="main" id="go">Start</button><button id="reset">Reset</button></div>
+  <div class="len" id="len"></div>
+  <div class="note">Keeps time when you switch tabs or reload. When a session ends, type the minutes into your Study Log.</div>
+</div>
+<script>
+(function () {
+  var KEY = "reeleTimerV1";
+  var PRESETS = { study: [25, 50, 60, 90], brk: [5, 10, 15] };
+  var st = { mode: "study", len: { study: 50, brk: 10 }, running: false, endAt: 0, leftMs: 50 * 60000 };
+  try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved && saved.len) st = saved; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  var $ = function (id) { return document.getElementById(id); };
+  var lastText = "";
+  function totalMs() { return st.len[st.mode] * 60000; }
+  function left() { return st.running ? Math.max(0, st.endAt - Date.now()) : st.leftMs; }
+  function setDigit(id, v) { var el = $(id); if (el.textContent !== v) { el.textContent = v; el.classList.remove("flip"); void el.offsetWidth; el.classList.add("flip"); } }
+  function render() {
+    var ms = left(), secs = Math.ceil(ms / 1000), m = Math.floor(secs / 60), s = secs % 60;
+    var mm = String(m).padStart(m > 99 ? 3 : 2, "0"), ss = String(s).padStart(2, "0");
+    var txt = mm + ss;
+    if (txt !== lastText) {
+      lastText = txt;
+      setDigit("m1", mm.slice(-2, -1)); setDigit("m2", mm.slice(-1));
+      setDigit("s1", ss.slice(0, 1)); setDigit("s2", ss.slice(1));
+    }
+    $("prog").style.width = (100 * (1 - ms / totalMs())) + "%";
+    $("head").textContent = st.mode === "study" ? "Time to study" : "Take a break";
+    $("bStudy").className = st.mode === "study" ? "on" : "";
+    $("bBreak").className = st.mode === "brk" ? "on" : "";
+    $("go").textContent = st.running ? "Pause" : (ms < totalMs() && ms > 0 ? "Resume" : "Start");
+    $("status").textContent = ms === 0 ? "Done! Log your minutes." :
+      (st.running ? (st.mode === "study" ? "Study in progress" : "Break in progress") : "Paused / ready") +
+      " · " + st.len[st.mode] + " min session";
+    if (ms === 0 && st.running) finish();
+  }
+  function finish() {
+    st.running = false; st.leftMs = 0; save();
+    try { var a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain();
+      o.connect(g); g.connect(a.destination); o.frequency.value = 660; g.gain.value = .08; o.start(); setTimeout(function () { o.stop(); }, 600); } catch (e) {}
+  }
+  function buildLen() {
+    var box = $("len"); box.innerHTML = "";
+    var key = st.mode === "study" ? "study" : "brk";
+    box.appendChild(document.createTextNode("Length (min): "));
+    PRESETS[key].forEach(function (v) {
+      var b = document.createElement("button"); b.textContent = v; if (st.len[key] === v) b.className = "on";
+      b.onclick = function () { setLen(v); }; box.appendChild(b);
+    });
+    var inp = document.createElement("input"); inp.type = "number"; inp.min = 1; inp.max = 600; inp.placeholder = "custom";
+    inp.onchange = function () { var v = Math.max(1, Math.min(600, parseInt(inp.value, 10) || 0)); if (v) setLen(v); };
+    box.appendChild(inp);
+  }
+  function setLen(v) { st.len[st.mode] = v; st.running = false; st.leftMs = v * 60000; save(); buildLen(); render(); }
+  function setMode(m) { st.mode = m; st.running = false; st.leftMs = totalMs(); save(); buildLen(); render(); }
+  $("bStudy").onclick = function () { setMode("study"); };
+  $("bBreak").onclick = function () { setMode("brk"); };
+  $("go").onclick = function () {
+    if (st.running) { st.leftMs = left(); st.running = false; }
+    else { if (st.leftMs <= 0) st.leftMs = totalMs(); st.endAt = Date.now() + st.leftMs; st.running = true; }
+    save(); render();
+  };
+  $("reset").onclick = function () { st.running = false; st.leftMs = totalMs(); save(); render(); };
+  if (st.running && st.endAt <= Date.now()) { st.running = false; st.leftMs = 0; }
+  buildLen(); render(); setInterval(render, 250);
+})();
+</script>
+</body>
+</html>

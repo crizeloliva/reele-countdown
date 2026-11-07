@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet"><title>Greeting</title>
+<style>
+  :root { color-scheme: light dark; --text:#4b2a73; --sub:#8a6bb0; }
+  @media (prefers-color-scheme: dark) { :root { --text:#f3e8ff; --sub:#cbb4ec; } }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: transparent; font-family: "Noto Serif", Georgia, "Times New Roman", serif; }
+  body { display: flex; align-items: center; padding: 4px 8px; }
+  .wrap { width: 100%; text-align: left; }
+  #msg { font-size: 30px; font-weight: bold; line-height: 1.2; color: var(--text); }
+  #sub { margin-top: 4px; font-size: 14px; color: var(--sub); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="msg">&nbsp;</div>
+  <div id="sub"></div>
+</div>
+<script>
+  var NAME = "Azi";
+  var TITLE = "Engr. " + NAME;
+  // Messages by time of day. {n} = name, {t} = Engr. + name
+  var LINES = {
+    morning: [
+      "Good morning, {n}! Let's make today count.",
+      "Rise and shine, {t}! Small steps today.",
+      "Good morning, {t}! One topic at a time.",
+      "Morning, {n}! Future Engr. in progress."
+    ],
+    afternoon: [
+      "Hey {t}, let's do this!",
+      "Good afternoon, {n}! Ready to review?",
+      "You've got this, {t}. Keep going!",
+      "Hey {n}, a little progress is still progress."
+    ],
+    evening: [
+      "Good evening, {n}! One more good session?",
+      "Hey {t}, finish strong tonight!",
+      "Evening, {n}. Proud of how far you've come.",
+      "Hey {n}, ready to review? Take it easy and steady."
+    ],
+    night: [
+      "Burning the midnight oil, {n}? Don't forget to rest.",
+      "Hey {t}, one last topic then sleep well.",
+      "Late night, {n}. Be kind to yourself, rest counts too."
+    ]
+  };
+  var params = new URLSearchParams(location.search);
+  if (params.get("name")) { NAME = params.get("name"); TITLE = "Engr. " + NAME; }
+  var h = new Date().getHours();
+  var slot = h >= 5 && h < 12 ? "morning" : h >= 12 && h < 18 ? "afternoon" : h >= 18 && h < 22 ? "evening" : "night";
+  var list = LINES[slot];
+  var line = list[Math.floor(Math.random() * list.length)].replace(/\{t\}/g, TITLE).replace(/\{n\}/g, NAME);
+  document.getElementById("msg").textContent = line;
+  document.getElementById("sub").textContent = new Date().toLocaleDateString("en-US",
+    { weekday: "long", month: "long", day: "numeric" });
+</script>
+</body>
+</html>

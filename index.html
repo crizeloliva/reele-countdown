@@ -3,20 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>REELE Countdown</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet"><title>REELE Countdown</title>
 <style>
-  :root { --deep:#6a3fa0; --text:#3d1f5c; --pink:#f8bbd9; --lilac:#d1c4e9; --soft:#f8f0fc; }
+  :root { color-scheme: light dark; --deep:#6a3fa0; --text:#3d1f5c; --c1:#d1c4e9; --c2:#f8bbd9; }
+  @media (prefers-color-scheme: dark) {
+    :root { --deep:#e3cdfb; --text:#f3e8ff; --c1:#4a3470; --c2:#74406a; }
+  }
   * { box-sizing: border-box; margin: 0; }
-  html, body { height: 100%; background: transparent; font-family: Georgia, "Times New Roman", serif; }
+  html, body { height: 100%; background: transparent; font-family: "Noto Serif", Georgia, "Times New Roman", serif; }
   body { display: flex; align-items: center; justify-content: center; padding: 8px; }
   .card { width: 100%; max-width: 560px; padding: 16px 20px 14px; text-align: center; color: var(--text);
-    background: linear-gradient(135deg, var(--lilac), var(--pink)); border-radius: 16px; }
-  .label { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+    background: linear-gradient(135deg, var(--c1), var(--c2)); border-radius: 16px; }
+  .label { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; opacity: .85; }
   .days { font-size: 64px; line-height: 1; font-weight: bold; color: var(--deep); margin: 6px 0 2px; }
   .unit { font-size: 15px; margin-bottom: 8px; }
   .parts { display: flex; justify-content: center; gap: 18px; font-size: 14px; }
   .parts b { display: block; font-size: 20px; color: var(--deep); }
-  .date { margin-top: 8px; font-size: 12px; opacity: .75; }
+  .date { margin-top: 8px; font-size: 12px; opacity: .8; }
 </style>
 </head>
 <body>
